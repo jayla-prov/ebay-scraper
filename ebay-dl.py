@@ -1,3 +1,4 @@
+import re
 import argparse
 import json
 import time
@@ -16,13 +17,18 @@ def get_text(item, selector):
 def get_cents(text):
     if text is None:
         return None
-    amount = text.split()[0]
-    amount = amount.replace("$", "").replace(",", "")
-    parts = amount.split(".")
-    dollars = int(parts[0])
+
+    match = re.search(r"(\d[\d,]*)(?:\.(\d{1,2}))?", text)
+    if match is None:
+        return None
+
+    dollars = int(match.group(1).replace(",", ""))
+    decimal = match.group(2)
+
     cents = 0
-    if len(parts) == 2:
-        cents = int(parts[1].ljust(2, "0"))
+    if decimal is not None:
+        cents = int(decimal.ljust(2, "0"))
+
     return dollars * 100 + cents
 
 
